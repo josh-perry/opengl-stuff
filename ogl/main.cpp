@@ -1,5 +1,11 @@
 #include <GL/glew.h>
 
+#include <glm/vec3.hpp>
+#include <glm/vec4.hpp>
+#include <glm/mat4x4.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
 #define GLFW_DLL
 #include <GLFW/glfw3.h>
 
@@ -44,17 +50,32 @@ int main()
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
 
+	//glCullFace(GL_BACK);
+	//glEnable(GL_CULL_FACE);
+
 	float points[] = {
-		 0.0f,  0.5f, 0.0f,
+		 0.5f,  0.5f, 0.0f,
 		 0.5f, -0.5f, 0.0f,
-		-0.5f, -0.5f, 0.0f
+		-0.5f, -0.5f, 0.0f,
+		-0.5f,  0.5f, 0.0f
+	};
+
+	unsigned int indices[] = {
+		0, 1, 3,
+		1, 2, 3
 	};
 
 	float colours[] = {
 		1.0f, 0.2f, 0.2f,
 		0.2f, 1.0f, 0.2f,
-		0.2f, 0.2f, 1.0f
+		0.2f, 0.2f, 1.0f,
+		1.0f, 0.2f, 0.5f
 	};
+
+	unsigned int ebo;
+	glGenBuffers(1, &ebo);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
 	GLuint points_vbo = 0;
 	glGenBuffers(1, &points_vbo);
@@ -84,10 +105,11 @@ int main()
 		"#version 400\n"
 		"layout(location = 0) in vec3 vertex_position;\n"
 		"layout(location = 1) in vec3 vertex_colour;\n"
-		"out vec3 colour;"
+		"uniform mat4 transform;\n"
+		"out vec3 colour;\n"
 		"void main() {\n"
 		"	colour = vertex_colour;"
-		"   gl_Position = vec4(vertex_position, 1.0);"
+		"   gl_Position = transform * vec4(vertex_position, 1.0);"
 		"}";
 
 	const char* frag_shader_src =
@@ -112,9 +134,29 @@ int main()
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		glUseProgram(mat.shader_program);
-		glBindVertexArray(vao);
 
-		glDrawArrays(GL_TRIANGLES, 0, 3);
+		const float width = 4;
+		const float height = 3;
+
+		glm::mat4 projection = glm::perspective(glm::radians(45.0f), width / height, 0.1f, 100.0f);
+
+		glm::mat4 view = glm::lookAt(
+			glm::vec3(4, 3, 3), // eye
+			glm::vec3(0, 0, 0), // center
+			glm::vec3(0, 1, 0)  // up
+		);
+
+		glm::mat4 identity = glm::mat4(1.0f);
+		glm::mat4 transform = projection * view * identity;
+		transform = glm::rotate(transform, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
+		transform = glm::rotate(transform, (float)glfwGetTime()*2, glm::vec3(1.0f, 0.0f, 0.0f));
+
+		GLuint transformLoc = glGetUniformLocation(mat.shader_program, "transform");
+		glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(transform));
+
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+		glDrawElements(GL_TRIANGLES, sizeof(indices) / sizeof(unsigned int), GL_UNSIGNED_INT, 0);
+
 		glfwSwapBuffers(window);
 	}
 
