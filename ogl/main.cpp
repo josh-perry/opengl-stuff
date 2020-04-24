@@ -68,11 +68,11 @@ int main()
 
 	const char* frag_shader_src =
 		"#version 400\n"
-		//"in vec3 colour;"
+		"in vec3 colour;"
 		"out vec4 frag_colour;\n"
 		"void main() {\n"
-		//"	frag_colour = vec4(colour, 1.0);\n"
-		"	frag_colour = vec4(1.0, 0.0, 0.0, 1.0);\n"
+		"	frag_colour = vec4(colour, 1.0);\n"
+		//"	frag_colour = vec4(1.0, 0.0, 0.0, 1.0);\n"
 		"}";
 
 	auto mat = create_material(vertex_shader_src, frag_shader_src);
