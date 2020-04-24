@@ -1,4 +1,5 @@
 #pragma once
+#include <string>
 #include <GL\glew.h>
 #include <gl\GL.h>
 #include <vector>
@@ -26,6 +27,9 @@ bool try_compile_shader(GLuint shader)
 
 		std::vector<GLchar> infoLog(maxLength);
 		glGetShaderInfoLog(shader, maxLength, &maxLength, &infoLog[0]);
+
+		std::string s(infoLog.begin(), infoLog.end());
+		printf(s.c_str());
 
 		glDeleteShader(shader);
 		return true;
