@@ -13,6 +13,7 @@
 #include "material.h"
 #include "mesh.h"
 #include "model.h"
+#include "util.h"
 
 // I don't know why I need this; but I get linker errors otherwise.
 // https://community.khronos.org/t/unresolved-external-symbol/19795/2
@@ -55,8 +56,8 @@ int main()
 	glCullFace(GL_BACK);
 	glEnable(GL_CULL_FACE);
 
-	auto vertex_shader_src = load_shader("Resources/shaders/test.vert");
-	auto frag_shader_src = load_shader("Resources/shaders/test.frag");
+	auto vertex_shader_src = load_string_from_file("Resources/shaders/test.vert");
+	auto frag_shader_src = load_string_from_file("Resources/shaders/test.frag");
 	auto mat = create_material(vertex_shader_src.c_str(), frag_shader_src.c_str());
 
 	const float width = 4;

@@ -59,15 +59,3 @@ Material create_material(const char* vertex_src, const char* frag_src)
 
 	return mat;
 }
-
-std::string load_shader(const char* filename)
-{
-	std::ifstream shader_file { filename };
-	std::string contents
-	{
-		std::istreambuf_iterator<char>(shader_file),
-		std::istreambuf_iterator<char>()
-	};
-
-	return contents;
-}
