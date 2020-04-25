@@ -52,8 +52,8 @@ int main()
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
 
-	//glCullFace(GL_BACK);
-	//glEnable(GL_CULL_FACE);
+	glCullFace(GL_BACK);
+	glEnable(GL_CULL_FACE);
 
 	const char* vertex_shader_src =
 		"#version 400\n"
@@ -72,7 +72,6 @@ int main()
 		"out vec4 frag_colour;\n"
 		"void main() {\n"
 		"	frag_colour = vec4(colour, 1.0);\n"
-		//"	frag_colour = vec4(1.0, 0.0, 0.0, 1.0);\n"
 		"}";
 
 	auto mat = create_material(vertex_shader_src, frag_shader_src);
@@ -83,12 +82,12 @@ int main()
 	glm::mat4 projection = glm::perspective(glm::radians(45.0f), width / height, 0.1f, 100.0f);
 
 	glm::mat4 view = glm::lookAt(
-		glm::vec3(4, 3, 3), // eye
-		glm::vec3(0, 0, 0), // center
-		glm::vec3(0, 1, 0)  // up
+		glm::vec3(0.0f, 0.0f, 20.0f), // eye
+		glm::vec3(0.0f, 0.0f, 0.0f),  // center
+		glm::vec3(0.0f, 1.0f, 0.0f)   // +Y = up
 	);
 
-	auto model = create_model("D:\\monkey.fbx");
+	auto model = create_model("D:\\gizmo.obj");
 
 	while (!glfwWindowShouldClose(window))
 	{
@@ -105,8 +104,8 @@ int main()
 
 		glm::mat4 identity = glm::mat4(1.0f);
 		glm::mat4 transform = projection * view * identity;
-		transform = glm::rotate(transform, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
-		transform = glm::rotate(transform, (float)glfwGetTime() * 2, glm::vec3(1.0f, 0.0f, 0.0f));
+		transform = glm::rotate(transform, glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+		transform = glm::rotate(transform, (float)glfwGetTime(), glm::vec3(1.0f, 0.0f, 0.0f));
 
 		GLuint transformLoc = glGetUniformLocation(mat.shader_program, "transform");
 		glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(transform));
