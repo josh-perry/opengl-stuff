@@ -87,7 +87,7 @@ int main()
 		glm::vec3(0.0f, 1.0f, 0.0f)   // +Y = up
 	);
 
-	auto model = create_model("D:\\gizmo.obj");
+	auto model = create_model("Resources/gizmo.obj");
 
 	while (!glfwWindowShouldClose(window))
 	{

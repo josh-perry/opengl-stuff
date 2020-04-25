@@ -103,7 +103,7 @@
       </Outputs>
     </CustomBuildStep>
     <PostBuildEvent>
-      <Command>xcopy /E /y "$(ProjectDir)Resources" "$(OutDir)"</Command>
+      <Command>xcopy /E /y "$(ProjectDir)Resources" "$(OutDir)Resources\"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
