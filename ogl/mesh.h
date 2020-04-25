@@ -21,7 +21,7 @@ struct Mesh
 std::vector<GLfloat> get_colour_data(unsigned int vertices_count)
 {
 	std::vector<GLfloat> colour_data;
-	for (int v = 0; v < vertices_count; v++) {
+	for (unsigned int v = 0; v < vertices_count; v++) {
 		colour_data.push_back(1.0f);
 		colour_data.push_back(0.0f);
 		colour_data.push_back(1.0f);

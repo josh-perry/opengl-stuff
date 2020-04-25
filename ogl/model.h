@@ -74,7 +74,7 @@ Model create_model(char* filepath)
 
 void draw_model(Model model)
 {
-	for (int i = 0; i < model.meshes.size(); i++)
+	for (unsigned int i = 0; i < model.meshes.size(); i++)
 	{
 		draw_mesh(model.meshes[i]);
 	}
