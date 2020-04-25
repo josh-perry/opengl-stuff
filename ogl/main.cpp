@@ -55,26 +55,9 @@ int main()
 	glCullFace(GL_BACK);
 	glEnable(GL_CULL_FACE);
 
-	const char* vertex_shader_src =
-		"#version 400\n"
-		"layout(location = 0) in vec3 vertex_position;\n"
-		"layout(location = 1) in vec3 vertex_colour;\n"
-		"uniform mat4 transform;\n"
-		"out vec3 colour;\n"
-		"void main() {\n"
-		"	colour = vertex_colour;"
-		"   gl_Position = transform * vec4(vertex_position, 1.0);"
-		"}";
-
-	const char* frag_shader_src =
-		"#version 400\n"
-		"in vec3 colour;"
-		"out vec4 frag_colour;\n"
-		"void main() {\n"
-		"	frag_colour = vec4(colour, 1.0);\n"
-		"}";
-
-	auto mat = create_material(vertex_shader_src, frag_shader_src);
+	auto vertex_shader_src = load_shader("Resources/shaders/test.vert");
+	auto frag_shader_src = load_shader("Resources/shaders/test.frag");
+	auto mat = create_material(vertex_shader_src.c_str(), frag_shader_src.c_str());
 
 	const float width = 4;
 	const float height = 3;

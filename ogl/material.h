@@ -3,6 +3,7 @@
 #include <GL\glew.h>
 #include <gl\GL.h>
 #include <vector>
+#include <fstream>
 
 struct Material
 {
@@ -57,4 +58,16 @@ Material create_material(const char* vertex_src, const char* frag_src)
 	glLinkProgram(mat.shader_program);
 
 	return mat;
+}
+
+std::string load_shader(const char* filename)
+{
+	std::ifstream shader_file { filename };
+	std::string contents
+	{
+		std::istreambuf_iterator<char>(shader_file),
+		std::istreambuf_iterator<char>()
+	};
+
+	return contents;
 }
