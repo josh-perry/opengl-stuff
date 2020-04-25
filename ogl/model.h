@@ -16,6 +16,7 @@ Mesh process_mesh(aiMesh *mesh, const aiScene *scene)
 {
 	std::vector<Vertex> vertices;
 	std::vector<unsigned int> indices;
+	std::vector<Texture> textures;
 
 	for (unsigned int i = 0; i < mesh->mNumVertices; i++)
 	{
@@ -35,7 +36,7 @@ Mesh process_mesh(aiMesh *mesh, const aiScene *scene)
 		}
 	}
 
-	return create_mesh(vertices, indices);
+	return create_mesh(vertices, indices, textures);
 }
 
 void process_ai_node(Model* model, aiNode* node, const aiScene* scene)
