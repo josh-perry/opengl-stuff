@@ -20,6 +20,8 @@
 #pragma comment(lib, "opengl32.lib")
 #pragma comment(lib, "glu32.lib")
 
+void print_opengl_stats();
+
 int main()
 {
 	if (!glfwInit())
@@ -31,7 +33,9 @@ int main()
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-	auto window = glfwCreateWindow(800, 600, "Hello triangle!", NULL, NULL);
+	const float width = 800;
+	const float height = 600;
+	auto window = glfwCreateWindow(width, height, "Hello triangle!", NULL, NULL);
 
 	if (!window)
 	{
@@ -45,10 +49,7 @@ int main()
 	glewExperimental = GL_TRUE;
 	glewInit();
 
-	const GLubyte* renderer = glGetString(GL_RENDERER); // get renderer string
-	const GLubyte* version = glGetString(GL_VERSION); // version as a string
-	printf("Renderer: %s\n", renderer);
-	printf("OpenGL version supported %s\n", version);
+	print_opengl_stats();
 
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
@@ -60,14 +61,10 @@ int main()
 	auto frag_shader_src = load_string_from_file("Resources/shaders/test.frag");
 	auto mat = create_material(vertex_shader_src.c_str(), frag_shader_src.c_str());
 
-	const float width = 4;
-	const float height = 3;
-
 	glm::mat4 projection = glm::perspective(glm::radians(45.0f), width / height, 0.1f, 100.0f);
-
 	glm::mat4 view = glm::lookAt(
-		glm::vec3(0.0f, 0.0f, 20.0f), // eye
-		glm::vec3(0.0f, 0.0f, 0.0f),  // center
+		glm::vec3(0.0f, 0.0f, 20.0f), // eye position
+		glm::vec3(0.0f, 0.0f, 0.0f),  // point at origin
 		glm::vec3(0.0f, 1.0f, 0.0f)   // +Y = up
 	);
 
@@ -84,8 +81,6 @@ int main()
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		glUseProgram(mat.shader_program);
-
 		glm::mat4 identity = glm::mat4(1.0f);
 		glm::mat4 transform = projection * view * identity;
 		transform = glm::rotate(transform, glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
@@ -94,6 +89,7 @@ int main()
 		GLuint transformLoc = glGetUniformLocation(mat.shader_program, "transform");
 		glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(transform));
 
+		glUseProgram(mat.shader_program);
 		draw_model(model);
 
 		glfwSwapBuffers(window);
@@ -101,4 +97,13 @@ int main()
 
 	glfwTerminate();
 	return 0;
+}
+
+void print_opengl_stats()
+{
+	const GLubyte* renderer = glGetString(GL_RENDERER);
+	const GLubyte* version = glGetString(GL_VERSION);
+
+	printf("Renderer: %s\n", renderer);
+	printf("OpenGL version supported %s\n", version);
 }
