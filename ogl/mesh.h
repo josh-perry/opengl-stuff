@@ -25,8 +25,8 @@ Mesh create_mesh(std::vector<Vertex> v, std::vector<GLuint> i)
 	// Colours
 	std::vector<GLfloat> colour_data;
 	for (int v = 0; v < m.vertices.size(); v++) {
-		colour_data.push_back(0.0f);
 		colour_data.push_back(1.0f);
+		colour_data.push_back(0.0f);
 		colour_data.push_back(0.0f);
 	}
 
@@ -51,7 +51,7 @@ Mesh create_mesh(std::vector<Vertex> v, std::vector<GLuint> i)
 	glBufferData(GL_ARRAY_BUFFER, colour_data.size() * sizeof(GLfloat), &colour_data[0], GL_STATIC_DRAW);
 
 	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(GLfloat), NULL);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, NULL);
 
 	return m;
 }
