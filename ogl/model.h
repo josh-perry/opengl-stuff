@@ -3,9 +3,9 @@
 #include <assimp\Importer.hpp>
 #include <assimp\scene.h>
 #include <assimp\postprocess.h>
+#include <assimp\mesh.h>
 
 #include "mesh.h"
-#include <assimp\mesh.h>
 
 struct Model
 {
@@ -56,9 +56,17 @@ Mesh process_mesh(aiMesh *mesh, const aiScene *scene)
 	if (mesh->mMaterialIndex >= 0)
 	{
 		// Get material from scene
-		//aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
+		aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
 
-		//get_textures_for_material(material, DIFFUSE);
+		std::vector<Texture> diffuse_textures = get_textures_for_material(material, TextureType::DIFFUSE);
+
+		for (unsigned int i = 0; i < diffuse_textures.size(); i++)
+		{
+			GLuint texture_id = load_texture(diffuse_textures[i]);
+			diffuse_textures[i].id = texture_id;
+
+			textures.push_back(diffuse_textures[i]);
+		}
 	}
 
 	return create_mesh(vertices, indices, textures);

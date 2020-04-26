@@ -7,9 +7,6 @@
 
 #include <math.h>
 
-#define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
-
 struct Mesh
 {
 	std::vector<Vertex> vertices;
@@ -59,41 +56,6 @@ Mesh create_mesh(std::vector<Vertex> v, std::vector<GLuint> i, std::vector<Textu
 	glEnableVertexAttribArray(vertex_texture_coords_attrib);
 	glVertexAttribPointer(vertex_texture_coords_attrib, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, texture_coords));
 
-	// Temp. image stuff:
-	GLuint texture;
-
-	glGenTextures(1, &texture);
-	glBindTexture(GL_TEXTURE_2D, texture);
-
-	// Wrapping
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-	// Filtering
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-	// Load image
-	int width;
-	int height;
-	int channels;
-	int desiredChannels = 0; // ?
-
-	unsigned char* data = stbi_load("D:\wood.jpg", &width, &height, &channels, desiredChannels);
-
-	if (data)
-	{
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-		glGenerateMipmap(GL_TEXTURE_2D);
-	}
-	else
-	{
-		printf("Image is fucked dude");
-	}
-
-	stbi_image_free(data);
-	// End temp. image stuff
-
 	return m;
 }
 
@@ -111,8 +73,8 @@ void draw_mesh(Mesh mesh, glm::mat4 identity, glm::mat4 view, glm::mat4 projecti
 	glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
 
 	glm::mat4 transform = projection * view * identity;
-	transform = glm::rotate(transform, (float)glfwGetTime(), glm::vec3(1.0f, 1.0f, 1.0f));
-	transform = glm::translate(transform, glm::vec3(0.0f, (float)sin(glfwGetTime()), 0.0f));
+	//transform = glm::rotate(transform, (float)glfwGetTime(), glm::vec3(1.0f, 1.0f, 1.0f));
+	//transform = glm::translate(transform, glm::vec3(0.0f, (float)sin(glfwGetTime()), 0.0f));
 
 	GLuint transformLoc = glGetUniformLocation(mesh.shader_program, "transform");
 	glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(transform));
@@ -121,7 +83,18 @@ void draw_mesh(Mesh mesh, glm::mat4 identity, glm::mat4 view, glm::mat4 projecti
 	glUniform3f(lightColourLoc, 1.0f, 1.0f, 1.0f);
 
 	GLuint lightPositionLoc = glGetUniformLocation(mesh.shader_program, "light_position");
-	glUniform3f(lightPositionLoc, 13.0f, 5.0f, 5.0f);
+	glUniform3f(lightPositionLoc, sin(glfwGetTime()*2) * 24.0f, 5.0f, 5.0f);
+
+	// For now just get the first texture
+	if (mesh.textures.size() > 0)
+	{
+		glBindTexture(GL_TEXTURE_2D, mesh.textures[0].id);
+	}
+	else
+	{
+		printf("No textures found for mesh! Unbinding.\n");
+		glBindTexture(GL_TEXTURE_2D, 0);
+	}
 
 	glBindVertexArray(mesh.vao);
 	glDrawElements(GL_TRIANGLES, mesh.indices.size(), GL_UNSIGNED_INT, 0);

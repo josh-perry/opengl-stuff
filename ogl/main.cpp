@@ -73,7 +73,7 @@ int main()
 
 	glm::mat4 projection = glm::perspective(glm::radians(45.0f), width / height, 0.1f, 100.0f);
 
-	auto model = create_model("D:/monkey.obj");
+	auto model = create_model("Resources/monkey.obj");
 
 	// HACK: for now just set all the meshes to our premade material's shader
 	for (unsigned int i = 0; i < model.meshes.size(); i++)

@@ -2,8 +2,10 @@
 #include <GL\glew.h>
 #include <assimp\scene.h>
 
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
 
-enum TextureType
+enum class TextureType
 {
 	DIFFUSE,
 	SPECULAR
@@ -20,9 +22,9 @@ aiTextureType map_TextureType_to_aiTextureType(TextureType type)
 {
 	switch (type)
 	{
-		case DIFFUSE:
+		case TextureType::DIFFUSE:
 			return aiTextureType_DIFFUSE;
-		case SPECULAR:
+		case TextureType::SPECULAR:
 			return aiTextureType_SPECULAR;
 		default:
 			printf("ERROR: could not map type %i to aiTextureType!", type);
@@ -51,4 +53,41 @@ std::vector<Texture> get_textures_for_material(aiMaterial *mat, TextureType type
 	}
 
 	return textures;
+}
+
+GLuint load_texture(Texture texture)
+{
+	// First: try to load image
+	int width;
+	int height;
+	int channels;
+	int desiredChannels = 0; // ?
+
+	unsigned char* data = stbi_load(("Resources/" + texture.path).c_str(), &width, &height, &channels, desiredChannels);
+
+	if (!data)
+	{
+		printf("Image is fucked dude\n");
+		return -1;
+	}
+
+	GLuint texture_id;
+
+	glGenTextures(1, &texture_id);
+	glBindTexture(GL_TEXTURE_2D, texture_id);
+
+	// Wrapping
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+	// Filtering
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+	glGenerateMipmap(GL_TEXTURE_2D);
+
+	stbi_image_free(data);
+
+	return texture_id;
 }
