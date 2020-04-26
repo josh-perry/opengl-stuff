@@ -6,11 +6,11 @@ in vec3 colour;
 in vec2 tex_coord;
 in vec3 normal;
 in vec3 frag_position;
+in vec3 light_pos;
 
 uniform sampler2D tex;
 uniform vec3 view_position;
 uniform vec3 light_colour;
-uniform vec3 light_position;
 
 void main() {
 	// Ambient
@@ -18,7 +18,7 @@ void main() {
 	vec3 ambient = ambient_strength * light_colour;
 
 	vec3 norm = normalize(normal);
-	vec3 light_direction = normalize(light_position - frag_position);
+	vec3 light_direction = normalize(light_pos - frag_position);
 
 	// Diffuse
 	float diff = max(dot(norm, light_direction), 0.0);
@@ -28,10 +28,11 @@ void main() {
 	float specular_strength = 0.5f;
 	int shininess = 32;
 
-	vec3 view_direction = normalize(view_position - frag_position);
+	//vec3 view_direction = normalize(view_position - frag_position);
+	vec3 view_direction = normalize(-frag_position);
 	vec3 reflect_direction = reflect(-light_direction, norm);
 	float spec = pow(max(dot(view_direction, reflect_direction), 0.0f), shininess);
 	vec3 specular = specular_strength * spec * light_colour;
 
-	frag_colour = vec4(texture(tex, tex_coord).rgb * (ambient + diffuse + specular), 1.0);
+	frag_colour = vec4((ambient + diffuse + specular) * texture(tex, tex_coord).rgb, 1.0);
 }
