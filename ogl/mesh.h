@@ -14,6 +14,8 @@ struct Mesh
 	std::vector<GLuint> indices;
 	std::vector<Texture> textures;
 
+	GLuint shader_program;
+
 	GLuint vao;
 	GLuint vbo;
 	GLuint ebo;
@@ -93,8 +95,13 @@ Mesh create_mesh(std::vector<Vertex> v, std::vector<GLuint> i, std::vector<Textu
 	return m;
 }
 
-void draw_mesh(Mesh mesh)
+void draw_mesh(Mesh mesh, glm::mat4 transform)
 {
+	glUseProgram(mesh.shader_program);
+
+	GLuint transformLoc = glGetUniformLocation(mesh.shader_program, "transform");
+	glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(transform));
+
 	glBindVertexArray(mesh.vao);
 	glDrawElements(GL_TRIANGLES, mesh.indices.size(), GL_UNSIGNED_INT, 0);
 	glBindVertexArray(0);

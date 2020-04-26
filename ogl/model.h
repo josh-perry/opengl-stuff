@@ -96,10 +96,10 @@ Model create_model(char* filepath)
 	return model;
 }
 
-void draw_model(Model model)
+void draw_model(Model model, glm::mat4 transform)
 {
 	for (unsigned int i = 0; i < model.meshes.size(); i++)
 	{
-		draw_mesh(model.meshes[i]);
+		draw_mesh(model.meshes[i], transform);
 	}
 }
