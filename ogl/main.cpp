@@ -88,10 +88,7 @@ int main()
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		glm::mat4 identity = glm::mat4(1.0f);
-		glm::mat4 transform = projection * view * identity;
-		transform = glm::rotate(transform, (float)glfwGetTime(), glm::vec3(0.0f, 1.0f, 0.0f));
-
-		draw_model(model, transform);
+		draw_model(model, identity, view, projection);
 
 		glfwSwapBuffers(window);
 	}

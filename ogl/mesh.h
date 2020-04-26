@@ -5,6 +5,8 @@
 #include <GL\glew.h>
 #include "texture.h"
 
+#include <math.h>
+
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
@@ -95,12 +97,31 @@ Mesh create_mesh(std::vector<Vertex> v, std::vector<GLuint> i, std::vector<Textu
 	return m;
 }
 
-void draw_mesh(Mesh mesh, glm::mat4 transform)
+void draw_mesh(Mesh mesh, glm::mat4 identity, glm::mat4 view, glm::mat4 projection)
 {
 	glUseProgram(mesh.shader_program);
 
+	GLuint identityLoc = glGetUniformLocation(mesh.shader_program, "identity");
+	glUniformMatrix4fv(identityLoc, 1, GL_FALSE, glm::value_ptr(identity));
+
+	GLuint viewLoc = glGetUniformLocation(mesh.shader_program, "view");
+	glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+	
+	GLuint projectionLoc = glGetUniformLocation(mesh.shader_program, "projection");
+	glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
+
+	glm::mat4 transform = projection * view * identity;
+	transform = glm::rotate(transform, (float)glfwGetTime(), glm::vec3(1.0f, 1.0f, 1.0f));
+	transform = glm::translate(transform, glm::vec3(0.0f, (float)sin(glfwGetTime()), 0.0f));
+
 	GLuint transformLoc = glGetUniformLocation(mesh.shader_program, "transform");
 	glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(transform));
+
+	GLuint lightColourLoc = glGetUniformLocation(mesh.shader_program, "light_colour");
+	glUniform3f(lightColourLoc, 1.0f, 1.0f, 1.0f);
+
+	GLuint lightPositionLoc = glGetUniformLocation(mesh.shader_program, "light_position");
+	glUniform3f(lightPositionLoc, 13.0f, 5.0f, 5.0f);
 
 	glBindVertexArray(mesh.vao);
 	glDrawElements(GL_TRIANGLES, mesh.indices.size(), GL_UNSIGNED_INT, 0);
