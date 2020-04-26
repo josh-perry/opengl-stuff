@@ -5,6 +5,9 @@
 #include <GL\glew.h>
 #include "texture.h"
 
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+
 struct Mesh
 {
 	std::vector<Vertex> vertices;
@@ -18,18 +21,6 @@ struct Mesh
 	GLuint colour;
 };
 
-std::vector<GLfloat> get_colour_data(unsigned int vertices_count)
-{
-	std::vector<GLfloat> colour_data;
-	for (unsigned int v = 0; v < vertices_count; v++) {
-		colour_data.push_back(1.0f);
-		colour_data.push_back(0.0f);
-		colour_data.push_back(1.0f);
-	}
-
-	return colour_data;
-}
-
 Mesh create_mesh(std::vector<Vertex> v, std::vector<GLuint> i, std::vector<Texture> t)
 {
 	Mesh m = Mesh();
@@ -38,7 +29,8 @@ Mesh create_mesh(std::vector<Vertex> v, std::vector<GLuint> i, std::vector<Textu
 	m.textures = t;
 
 	const int vertex_attrib = 0;
-	const int vertex_colour_attrib = 1;
+	const int vertex_normal_attrib = 1;
+	const int vertex_texture_coords_attrib = 2;
 
 	glGenVertexArrays(1, &m.vao);
 	glBindVertexArray(m.vao);
@@ -57,15 +49,46 @@ Mesh create_mesh(std::vector<Vertex> v, std::vector<GLuint> i, std::vector<Textu
 	glEnableVertexAttribArray(vertex_attrib);
 	glVertexAttribPointer(vertex_attrib, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), NULL);
 
-	// Vertex colours
-	auto colour_data = get_colour_data(m.vertices.size());
-	glGenBuffers(1, &m.colour);
-	glBindBuffer(GL_ARRAY_BUFFER, m.colour);
-	glBufferData(GL_ARRAY_BUFFER, colour_data.size() * sizeof(GLfloat), &colour_data[0], GL_STATIC_DRAW);
+	glEnableVertexAttribArray(vertex_normal_attrib);
+	glVertexAttribPointer(vertex_normal_attrib, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, normal));
 
-	// Enable colour vertex attribute
-	glEnableVertexAttribArray(vertex_colour_attrib);
-	glVertexAttribPointer(vertex_colour_attrib, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+	glEnableVertexAttribArray(vertex_texture_coords_attrib);
+	glVertexAttribPointer(vertex_texture_coords_attrib, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, texture_coords));
+
+	// Temp. image stuff:
+	GLuint texture;
+
+	glGenTextures(1, &texture);
+	glBindTexture(GL_TEXTURE_2D, texture);
+
+	// Wrapping
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+	// Filtering
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	// Load image
+	int width;
+	int height;
+	int channels;
+	int desiredChannels = 0; // ?
+
+	unsigned char* data = stbi_load("D:\wood.jpg", &width, &height, &channels, desiredChannels);
+
+	if (data)
+	{
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+		glGenerateMipmap(GL_TEXTURE_2D);
+	}
+	else
+	{
+		printf("Image is fucked dude");
+	}
+
+	stbi_image_free(data);
+	// End temp. image stuff
 
 	return m;
 }

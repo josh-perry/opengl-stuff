@@ -18,14 +18,30 @@ Mesh process_mesh(aiMesh *mesh, const aiScene *scene)
 	std::vector<unsigned int> indices;
 	std::vector<Texture> textures;
 
+	// Vertices
 	for (unsigned int i = 0; i < mesh->mNumVertices; i++)
 	{
 		Vertex vertex;
 		vertex.position = glm::vec3(mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z);
+		vertex.normal = glm::vec3(mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z);
+
+		// Assimp allows up to 8 textures per vertex: only get the first one for now
+		const int uvChannel = 0;
+
+		if (mesh->mTextureCoords[uvChannel])
+		{
+			vertex.texture_coords = glm::vec2(mesh->mTextureCoords[uvChannel][i].x, mesh->mTextureCoords[uvChannel][i].y);
+		}
+		else
+		{
+			// No texture coords: just zero them
+			vertex.texture_coords = glm::vec2(0.0f, 0.0f);
+		}
 
 		vertices.push_back(vertex);
 	}
 
+	// Faces
 	for (unsigned int i = 0; i < mesh->mNumFaces; i++)
 	{
 		aiFace face = mesh->mFaces[i];
@@ -34,6 +50,15 @@ Mesh process_mesh(aiMesh *mesh, const aiScene *scene)
 		{
 			indices.push_back(face.mIndices[j]);
 		}
+	}
+
+	// Materials
+	if (mesh->mMaterialIndex >= 0)
+	{
+		// Get material from scene
+		//aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
+
+		//get_textures_for_material(material, DIFFUSE);
 	}
 
 	return create_mesh(vertices, indices, textures);
@@ -61,7 +86,6 @@ Model create_model(char* filepath)
 
 	if (!scene)
 	{
-		printf("Something has gone wrongl!\n");
 		printf(importer.GetErrorString());
 	}
 	else

@@ -35,7 +35,7 @@ int main()
 
 	const float width = 800;
 	const float height = 600;
-	auto window = glfwCreateWindow(width, height, "Hello triangle!", NULL, NULL);
+	auto window = glfwCreateWindow((int)width, (int)height, "Hello triangle!", NULL, NULL);
 
 	if (!window)
 	{
@@ -63,12 +63,12 @@ int main()
 
 	glm::mat4 projection = glm::perspective(glm::radians(45.0f), width / height, 0.1f, 100.0f);
 	glm::mat4 view = glm::lookAt(
-		glm::vec3(0.0f, 0.0f, 20.0f), // eye position
+		glm::vec3(0.0f, 0.0f, 5.0f), // eye position
 		glm::vec3(0.0f, 0.0f, 0.0f),  // point at origin
 		glm::vec3(0.0f, 1.0f, 0.0f)   // +Y = up
 	);
 
-	auto model = create_model("Resources/gizmo.obj");
+	auto model = create_model("D:/monkey.obj");
 
 	while (!glfwWindowShouldClose(window))
 	{
@@ -83,8 +83,8 @@ int main()
 
 		glm::mat4 identity = glm::mat4(1.0f);
 		glm::mat4 transform = projection * view * identity;
-		transform = glm::rotate(transform, glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-		transform = glm::rotate(transform, (float)glfwGetTime(), glm::vec3(1.0f, 0.0f, 0.0f));
+		transform = glm::rotate(transform, (float)glfwGetTime(), glm::vec3(0.0f, 1.0f, 0.0f));
+		//transform = glm::rotate(transform, (float)glfwGetTime()/2, glm::vec3(1.0f, 0.0f, 1.0f));
 
 		GLuint transformLoc = glGetUniformLocation(mat.shader_program, "transform");
 		glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(transform));
