@@ -10,6 +10,8 @@
 #include <GLFW/glfw3.h>
 
 #include <stdio.h>
+#include <fmt/format.h>
+
 #include "material.h"
 #include "mesh.h"
 #include "model.h"
@@ -170,9 +172,6 @@ void camera_movement(float dt, GLFWwindow* window, Camera* camera)
 
 void print_opengl_stats()
 {
-	const GLubyte* renderer = glGetString(GL_RENDERER);
-	const GLubyte* version = glGetString(GL_VERSION);
-
-	printf("Renderer: %s\n", renderer);
-	printf("OpenGL version supported %s\n", version);
+	log_line(fmt::format("Renderer: {}",  glGetString(GL_RENDERER)), LogLevel::INFO);
+	log_line(fmt::format("OpenGL version: {}", glGetString(GL_VERSION)), LogLevel::INFO);
 }

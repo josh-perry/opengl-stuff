@@ -2,8 +2,11 @@
 #include <GL\glew.h>
 #include <assimp\scene.h>
 
+#include <fmt/format.h>
+
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
+#include "log.h"
 
 enum class TextureType
 {
@@ -57,17 +60,25 @@ std::vector<Texture> get_textures_for_material(aiMaterial *mat, TextureType type
 
 GLuint load_texture(Texture texture)
 {
+	if (texture.path == "")
+	{
+		log_line("Tried to load a texture path of empty string; ignoring", LogLevel::TRACE);
+		return -1;
+	}
+
 	// First: try to load image
 	int width;
 	int height;
 	int channels;
 	int desiredChannels = 0; // ?
 
-	unsigned char* data = stbi_load(("Resources/" + texture.path).c_str(), &width, &height, &channels, desiredChannels);
+	std::string path = "Resources/" + texture.path;
+
+	unsigned char* data = stbi_load(path.c_str(), &width, &height, &channels, desiredChannels);
 
 	if (!data)
 	{
-		printf("Image is fucked dude\n");
+		log_line(fmt::format("Failed to load image at path: '{}'", texture.path), LogLevel::TRACE);
 		return -1;
 	}
 
@@ -88,6 +99,8 @@ GLuint load_texture(Texture texture)
 	glGenerateMipmap(GL_TEXTURE_2D);
 
 	stbi_image_free(data);
+
+	log_line(fmt::format("Loaded image: '{}'", texture.path), LogLevel::INFO);
 
 	return texture_id;
 }
