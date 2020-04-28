@@ -18,6 +18,7 @@
 #include "util.h"
 #include "camera.h"
 #include "mouse_state.h"
+#include "cubemap.h"
 
 // I don't know why I need this; but I get linker errors otherwise.
 // https://community.khronos.org/t/unresolved-external-symbol/19795/2
@@ -74,11 +75,25 @@ int main()
 	auto frag_shader_src = load_string_from_file("Resources/shaders/test.frag");
 	auto mat = create_material(vertex_shader_src.c_str(), frag_shader_src.c_str());
 
+	auto sky_vertex_shader_src = load_string_from_file("Resources/shaders/sky.vert");
+	auto sky_frag_shader_src = load_string_from_file("Resources/shaders/sky.frag");
+	auto sky_mat = create_material(sky_vertex_shader_src.c_str(), sky_frag_shader_src.c_str());
+
 	auto camera = create_camera();
 
 	glm::mat4 projection = glm::perspective(glm::radians(45.0f), width / height, 0.1f, 100.0f);
 
 	auto model = create_model("Resources/monkey.obj");
+
+	auto skybox = create_texture();
+	skybox.path = "sky/sky.jpg";
+	skybox.type = TextureType::CUBEMAP;
+
+	GLuint skyboxTexture = load_texture(skybox);
+
+	Cubemap cubemap = create_cubemap();
+	cubemap.material = sky_mat;
+	cubemap.texture = skyboxTexture;
 
 	// HACK: for now just set all the meshes to our premade material's shader
 	for (unsigned int i = 0; i < model.meshes.size(); i++)
@@ -116,6 +131,8 @@ int main()
 			camera.position + camera.front,
 			camera.up
 		);
+		
+		draw_cubemap(cubemap, view, projection);
 
 		glm::mat4 identity = glm::mat4(1.0f);
 		draw_model(model, identity, view, projection);
