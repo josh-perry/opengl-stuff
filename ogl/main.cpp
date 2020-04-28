@@ -30,9 +30,12 @@ void camera_rotation(float dt, GLFWwindow* window, Camera* camera, MouseState mo
 
 int main()
 {
+	set_min_log_level(LogLevel::DEBUG);
+
 	if (!glfwInit())
 	{
-		fprintf(stderr, "ERROR: could not start GLFW3\n");
+		log_line("Could not start GLFW3", LogLevel::FATAL);
+		return 1;
 	}
 
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -45,7 +48,7 @@ int main()
 
 	if (!window)
 	{
-		fprintf(stderr, "ERROR: could not open window\n");
+		log_line("Could not open window", LogLevel::FATAL);
 		glfwTerminate();
 		return 1;
 	}

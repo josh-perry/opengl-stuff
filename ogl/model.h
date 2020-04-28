@@ -94,7 +94,7 @@ Model create_model(char* filepath)
 
 	if (!scene)
 	{
-		printf(importer.GetErrorString());
+		log_line(importer.GetErrorString(), LogLevel::ERROR);
 	}
 	else
 	{

@@ -92,7 +92,7 @@ void draw_mesh(Mesh mesh, glm::mat4 identity, glm::mat4 view, glm::mat4 projecti
 	}
 	else
 	{
-		printf("No textures found for mesh! Unbinding.\n");
+		log_line("No textures found for mesh; unbinding", LogLevel::TRACE);
 		glBindTexture(GL_TEXTURE_2D, 0);
 	}
 
