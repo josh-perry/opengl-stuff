@@ -79,6 +79,10 @@ void log_line(std::string line, LogLevel log_level, bool to_file = false)
 
 	std::cout << full_line;
 
+#ifdef LOG_FILE_OVERRIDE
+	to_file = true;
+#endif
+
 	if (to_file)
 	{
 		log_to_file(full_line);
