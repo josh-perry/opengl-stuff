@@ -28,6 +28,10 @@
 void print_opengl_stats();
 void camera_movement(float dt, GLFWwindow* window, Camera* camera);
 void camera_rotation(float dt, GLFWwindow* window, Camera* camera, MouseState mouse_state);
+void framebuffer_resize_callback(GLFWwindow* window, int width, int height);
+
+float window_width = 800;
+float window_height = 600;
 
 int main()
 {
@@ -43,9 +47,7 @@ int main()
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-	const float width = 800;
-	const float height = 600;
-	auto window = glfwCreateWindow((int)width, (int)height, "Hello triangle!", NULL, NULL);
+	auto window = glfwCreateWindow((int)window_width, (int)window_height, "Hello triangle!", NULL, NULL);
 
 	if (!window)
 	{
@@ -55,6 +57,9 @@ int main()
 	}
 
 	glfwMakeContextCurrent(window);
+
+	// Setup callbacks
+	glfwSetFramebufferSizeCallback(window, framebuffer_resize_callback);
 	
 	// Mouse
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
@@ -81,7 +86,6 @@ int main()
 
 	auto camera = create_camera();
 
-	glm::mat4 projection = glm::perspective(glm::radians(45.0f), width / height, 0.1f, 100.0f);
 
 	auto model = create_model("Resources/monkey.obj");
 
@@ -132,6 +136,7 @@ int main()
 			camera.up
 		);
 		
+		glm::mat4 projection = glm::perspective(glm::radians(45.0f), window_width / window_height, 0.1f, 100.0f);
 		draw_cubemap(cubemap, view, projection);
 
 		glm::mat4 identity = glm::mat4(1.0f);
@@ -194,4 +199,11 @@ void print_opengl_stats()
 {
 	log_line(fmt::format("Renderer: {}",  glGetString(GL_RENDERER)), LogLevel::INFO);
 	log_line(fmt::format("OpenGL version: {}", glGetString(GL_VERSION)), LogLevel::INFO);
+}
+
+void framebuffer_resize_callback(GLFWwindow* window, int width, int height)
+{
+	glViewport(0, 0, width, height);
+	window_width = width;
+	window_height = height;
 }
