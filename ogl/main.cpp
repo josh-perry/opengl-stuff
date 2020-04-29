@@ -86,7 +86,6 @@ int main()
 
 	auto camera = create_camera();
 
-
 	auto model = create_model("Resources/monkey.obj");
 
 	auto skybox = create_texture();
@@ -126,6 +125,16 @@ int main()
 		if (glfwGetKey(window, GLFW_KEY_ESCAPE))
 		{
 			glfwSetWindowShouldClose(window, 1);
+		}
+
+		if (glfwGetKey(window, GLFW_KEY_F1) == GLFW_PRESS)
+		{
+			auto current_mode = glfwGetInputMode(window, GLFW_CURSOR);
+
+			if (current_mode == GLFW_CURSOR_DISABLED)
+				glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+			else
+				glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 		}
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
