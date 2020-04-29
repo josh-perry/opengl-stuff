@@ -59,7 +59,7 @@ Mesh create_mesh(std::vector<Vertex> v, std::vector<GLuint> i, std::vector<Textu
 	return m;
 }
 
-void draw_mesh(Mesh mesh, glm::mat4 identity, glm::mat4 view, glm::mat4 projection)
+void draw_mesh(Mesh mesh, glm::mat4 identity, glm::mat4 view, glm::mat4 projection, glm::vec3 position)
 {
 	glUseProgram(mesh.shader_program);
 
@@ -73,8 +73,7 @@ void draw_mesh(Mesh mesh, glm::mat4 identity, glm::mat4 view, glm::mat4 projecti
 	glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
 
 	glm::mat4 transform = projection * view * identity;
-	//transform = glm::rotate(transform, (float)glfwGetTime(), glm::vec3(1.0f, 1.0f, 1.0f));
-	//transform = glm::translate(transform, glm::vec3(0.0f, (float)sin(glfwGetTime()), 0.0f));
+	transform = glm::translate(transform, position);
 
 	GLuint transformLoc = glGetUniformLocation(mesh.shader_program, "transform");
 	glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(transform));

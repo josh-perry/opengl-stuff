@@ -104,10 +104,10 @@ Model create_model(char* filepath)
 	return model;
 }
 
-void draw_model(Model model, glm::mat4 identity, glm::mat4 view, glm::mat4 projection)
+void draw_model(Model model, glm::mat4 identity, glm::mat4 view, glm::mat4 projection, glm::vec3 position)
 {
 	for (unsigned int i = 0; i < model.meshes.size(); i++)
 	{
-		draw_mesh(model.meshes[i], identity, view, projection);
+		draw_mesh(model.meshes[i], identity, view, projection, position);
 	}
 }

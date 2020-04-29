@@ -19,6 +19,7 @@
 #include "camera.h"
 #include "mouse_state.h"
 #include "cubemap.h"
+#include "gameobject.h"
 
 // I don't know why I need this; but I get linker errors otherwise.
 // https://community.khronos.org/t/unresolved-external-symbol/19795/2
@@ -86,8 +87,6 @@ int main()
 
 	auto camera = create_camera();
 
-	auto model = create_model("Resources/monkey.obj");
-
 	auto skybox = create_texture();
 	skybox.path = "sky/sky.jpg";
 	skybox.type = TextureType::CUBEMAP;
@@ -98,10 +97,25 @@ int main()
 	cubemap.material = sky_mat;
 	cubemap.texture = skyboxTexture;
 
-	// HACK: for now just set all the meshes to our premade material's shader
-	for (unsigned int i = 0; i < model.meshes.size(); i++)
+	std::vector<Model> models;
+	std::vector<GameObject> gameobjects;
+
+	for (unsigned int i = 0; i <= 5; i++)
 	{
-		model.meshes[i].shader_program = mat.shader_program;
+		GameObject gameobject = create_gameobject();
+		gameobject.model = create_model("Resources/monkey.obj");
+		gameobject.world_position = glm::vec3(i * 5.0f, 0.0f, 0.0f);
+		gameobjects.push_back(gameobject);
+	}
+
+	for (unsigned int j = 0; j < gameobjects.size(); j++)
+	{
+		GameObject* gameobject = &gameobjects[j];
+
+		for (int i = 0; i < gameobject->model.meshes.size(); i++)
+		{
+			gameobject->model.meshes[i].shader_program = mat.shader_program;
+		}
 	}
 
 	float dt = 0.0f;
@@ -149,7 +163,11 @@ int main()
 		draw_cubemap(cubemap, view, projection);
 
 		glm::mat4 identity = glm::mat4(1.0f);
-		draw_model(model, identity, view, projection);
+
+		for (GameObject gameobject : gameobjects)
+		{
+			draw_model(gameobject.model, identity, view, projection, gameobject.world_position);
+		}
 		
 		reset_mouse_deltas(&mouse_state);
 
