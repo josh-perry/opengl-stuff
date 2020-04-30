@@ -6,6 +6,7 @@
 #include <fstream>
 
 #include "log.h"
+#include "util.h"
 
 struct Material
 {
@@ -64,4 +65,20 @@ Material create_material(const char* vertex_src, const char* frag_src)
 	glLinkProgram(mat.shader_program);
 
 	return mat;
+}
+
+bool default_mat_initialized = false;
+Material default_mat;
+
+Material get_default_material()
+{
+	if (default_mat_initialized)
+		return default_mat;
+
+	auto vertex_shader_src = load_string_from_file("Resources/shaders/test.vert");
+	auto frag_shader_src = load_string_from_file("Resources/shaders/test.frag");
+	default_mat = create_material(vertex_shader_src.c_str(), frag_shader_src.c_str());
+
+	default_mat_initialized = true;
+	return default_mat;
 }

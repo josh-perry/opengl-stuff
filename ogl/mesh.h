@@ -13,7 +13,7 @@ struct Mesh
 	std::vector<GLuint> indices;
 	std::vector<Texture> textures;
 
-	GLuint shader_program;
+	Material material;
 
 	GLuint vao;
 	GLuint vbo;
@@ -61,27 +61,34 @@ Mesh create_mesh(std::vector<Vertex> v, std::vector<GLuint> i, std::vector<Textu
 
 void draw_mesh(Mesh mesh, glm::mat4 identity, glm::mat4 view, glm::mat4 projection, glm::vec3 position)
 {
-	glUseProgram(mesh.shader_program);
+	Material* mat = &mesh.material;
 
-	GLuint identityLoc = glGetUniformLocation(mesh.shader_program, "identity");
+	if (mat->shader_program == 0)
+	{
+		mat = &get_default_material();
+	}
+
+	glUseProgram(mat->shader_program);
+
+	GLuint identityLoc = glGetUniformLocation(mat->shader_program, "identity");
 	glUniformMatrix4fv(identityLoc, 1, GL_FALSE, glm::value_ptr(identity));
 
-	GLuint viewLoc = glGetUniformLocation(mesh.shader_program, "view");
+	GLuint viewLoc = glGetUniformLocation(mat->shader_program, "view");
 	glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
 	
-	GLuint projectionLoc = glGetUniformLocation(mesh.shader_program, "projection");
+	GLuint projectionLoc = glGetUniformLocation(mat->shader_program, "projection");
 	glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
 
 	glm::mat4 transform = projection * view * identity;
 	transform = glm::translate(transform, position);
 
-	GLuint transformLoc = glGetUniformLocation(mesh.shader_program, "transform");
+	GLuint transformLoc = glGetUniformLocation(mat->shader_program, "transform");
 	glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(transform));
 
-	GLuint lightColourLoc = glGetUniformLocation(mesh.shader_program, "light_colour");
+	GLuint lightColourLoc = glGetUniformLocation(mat->shader_program, "light_colour");
 	glUniform3f(lightColourLoc, 1.0f, 1.0f, 1.0f);
 
-	GLuint lightPositionLoc = glGetUniformLocation(mesh.shader_program, "light_position");
+	GLuint lightPositionLoc = glGetUniformLocation(mat->shader_program, "light_position");
 	glUniform3f(lightPositionLoc, sin(glfwGetTime()*2) * 24.0f, 5.0f, 5.0f);
 
 	// For now just get the first texture

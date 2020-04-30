@@ -2,6 +2,8 @@
 
 #include <GL/glew.h>
 
+#include <entt/entt.hpp>
+
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
 #include <glm/mat4x4.hpp>
@@ -34,6 +36,7 @@ void print_opengl_stats();
 void camera_movement(float dt, GLFWwindow* window, Camera* camera);
 void camera_rotation(float dt, GLFWwindow* window, Camera* camera, MouseState mouse_state);
 void framebuffer_resize_callback(GLFWwindow* window, int width, int height);
+void create_monkey(entt::registry& registry);
 
 float window_width = 800;
 float window_height = 600;
@@ -42,7 +45,7 @@ void imgui_debugger(std::vector<GameObject> gameobjects)
 {
 	if (ImGui::Begin("Inspector"))
 	{
-		for(unsigned int i = 0; i < gameobjects.size(); i++)
+		for (unsigned int i = 0; i < gameobjects.size(); i++)
 		{
 			ImGui::PushID(gameobjects[i].id);
 			ImGui::Text(gameobjects[i].name.c_str());
@@ -68,11 +71,42 @@ void imgui_debugger(std::vector<GameObject> gameobjects)
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
 
+#include "position.h"
+#include "velocity.h"
+#include "renderable.h"
+
+void update(float dt, entt::registry& registry)
+{
+	registry.view<Position, Velocity>().each([dt](auto& pos, auto& vel) {
+		pos.position += vel.velocity * dt;
+		});
+}
+
+void draw(entt::registry& registry, Camera camera)
+{
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	glm::mat4 identity = glm::mat4(1.0f);
+	glm::mat4 view = glm::lookAt(
+		camera.position,
+		camera.position + camera.front,
+		camera.up
+	);
+	glm::mat4 projection = glm::perspective(glm::radians(45.0f), window_width / window_height, 0.1f, 100.0f);
+
+	registry.view<Position, Renderable, Model>().each([camera, identity, view, projection](auto& pos, auto& renderable, auto& model)
+		{
+			draw_model(model, identity, view, projection, pos.position);
+		});
+
+	registry.view<Cubemap, Renderable>().each([camera, view, projection](auto& cubemap, auto& renderable)
+		{
+			draw_cubemap(cubemap, view, projection);
+		});
+}
+
 int main()
 {
-	time_t t;
-	srand((unsigned)time(&t));
-
 	set_min_log_level(LogLevel::DEBUG);
 
 	if (!glfwInit())
@@ -98,7 +132,7 @@ int main()
 
 	// Setup callbacks
 	glfwSetFramebufferSizeCallback(window, framebuffer_resize_callback);
-	
+
 	// Mouse
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	MouseState mouse_state = create_mouse_state();
@@ -114,10 +148,6 @@ int main()
 	glCullFace(GL_BACK);
 	glEnable(GL_CULL_FACE);
 
-	auto vertex_shader_src = load_string_from_file("Resources/shaders/test.vert");
-	auto frag_shader_src = load_string_from_file("Resources/shaders/test.frag");
-	auto mat = create_material(vertex_shader_src.c_str(), frag_shader_src.c_str());
-
 	auto sky_vertex_shader_src = load_string_from_file("Resources/shaders/sky.vert");
 	auto sky_frag_shader_src = load_string_from_file("Resources/shaders/sky.frag");
 	auto sky_mat = create_material(sky_vertex_shader_src.c_str(), sky_frag_shader_src.c_str());
@@ -127,59 +157,17 @@ int main()
 	auto skybox = create_texture();
 	skybox.path = "sky/sky.jpg";
 	skybox.type = TextureType::CUBEMAP;
+	GLuint skybox_texture = load_texture(skybox);
 
-	GLuint skyboxTexture = load_texture(skybox);
+	entt::registry registry;
+	create_monkey(registry);
 
-	Cubemap cubemap = create_cubemap();
-	cubemap.material = sky_mat;
-	cubemap.texture = skyboxTexture;
-
-	std::vector<Model> models;
-	std::vector<GameObject> gameobjects;
-
-	for (unsigned int i = 0; i <= 5; i++)
-	{
-		GameObject gameobject = create_gameobject();
-
-		if (i % 2 == 0)
-		{
-			gameobject.model = create_model("Resources/monkey.obj");
-			gameobject.name = "Monkey";
-		}
-		else
-		{
-			gameobject.model = create_model("Resources/dice.obj");
-			gameobject.name = "Dice";
-		}
-
-		gameobject.world_position = glm::vec3(i * 5.0f, 0.0f, 0.0f);
-		gameobjects.push_back(gameobject);
-	}
-
-	for (unsigned int j = 0; j < gameobjects.size(); j++)
-	{
-		GameObject* gameobject = &gameobjects[j];
-
-		for (int i = 0; i < gameobject->model.meshes.size(); i++)
-		{
-			gameobject->model.meshes[i].shader_program = mat.shader_program;
-		}
-	}
+	auto cubemap = registry.create();
+	registry.assign<Renderable>(cubemap, Renderable{});
+	registry.assign<Cubemap>(cubemap, create_cubemap(sky_mat, skybox_texture));
 
 	float dt = 0.0f;
 	float last_frametime = 0.0f;
-
-	// Setup Dear ImGui context
-	IMGUI_CHECKVERSION();
-	ImGui::CreateContext();
-	ImGuiIO& io = ImGui::GetIO();
-	// Setup Platform/Renderer bindings
-	ImGui_ImplGlfw_InitForOpenGL(window, true);
-	ImGui_ImplOpenGL3_Init();
-	// Setup Dear ImGui style
-	ImGui::StyleColorsDark();
-
-	bool imgui_showing = false;
 
 	while (!glfwWindowShouldClose(window))
 	{
@@ -195,62 +183,18 @@ int main()
 		glfwGetCursorPos(window, &x, &y);
 		update_mouse_deltas(&mouse_state, x, y);
 
-		if (glfwGetKey(window, GLFW_KEY_P))
-		{
-			imgui_showing = !imgui_showing;
-
-			if (imgui_showing)
-			{
-				glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-			}
-			else
-			{
-				glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-			}
-		}
-
 		if (glfwGetKey(window, GLFW_KEY_ESCAPE))
 		{
 			glfwSetWindowShouldClose(window, 1);
 		}
 
-		if (imgui_showing)
-		{
-			ImGui_ImplOpenGL3_NewFrame();
-			ImGui_ImplGlfw_NewFrame();
-			ImGui::NewFrame();
-		}
-		else
-		{
-			camera_movement(dt, window, &camera);
-			camera_rotation(dt, window, &camera, mouse_state);
-		}
+		camera_movement(dt, window, &camera);
+		camera_rotation(dt, window, &camera, mouse_state);
 
-		// Draw
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		update(dt, registry);
+		draw(registry, camera);
 
-		glm::mat4 view = glm::lookAt(
-			camera.position,
-			camera.position + camera.front,
-			camera.up
-		);
-		
-		glm::mat4 projection = glm::perspective(glm::radians(45.0f), window_width / window_height, 0.1f, 100.0f);
-		draw_cubemap(cubemap, view, projection);
-
-		glm::mat4 identity = glm::mat4(1.0f);
-
-		for (GameObject gameobject : gameobjects)
-		{
-			draw_gameobject(gameobject, identity, view, projection);
-		}
-		
 		reset_mouse_deltas(&mouse_state);
-
-		if (imgui_showing)
-		{
-			imgui_debugger(gameobjects);
-		}
 
 		glfwSwapBuffers(window);
 	}
@@ -305,7 +249,7 @@ void camera_movement(float dt, GLFWwindow* window, Camera* camera)
 
 void print_opengl_stats()
 {
-	log_line(fmt::format("Renderer: {}",  glGetString(GL_RENDERER)), LogLevel::INFO);
+	log_line(fmt::format("Renderer: {}", glGetString(GL_RENDERER)), LogLevel::INFO);
 	log_line(fmt::format("OpenGL version: {}", glGetString(GL_VERSION)), LogLevel::INFO);
 }
 
@@ -314,4 +258,16 @@ void framebuffer_resize_callback(GLFWwindow* window, int width, int height)
 	glViewport(0, 0, width, height);
 	window_width = width;
 	window_height = height;
+}
+
+void create_monkey(entt::registry& registry)
+{
+	auto p = Position{};
+	p.position = glm::vec3(0.0f, 0.0f, 0.0f);
+
+	auto monkey = registry.create();
+	registry.assign<Position>(monkey, p);
+	registry.assign<Renderable>(monkey, Renderable{});
+	registry.assign<Velocity>(monkey, Velocity{ 1.0f, 0.0f, 0.0f });
+	registry.assign<Model>(monkey, create_model("Resources/monkey.obj"));
 }

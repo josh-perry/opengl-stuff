@@ -10,7 +10,7 @@ struct Cubemap
     Material material;
 };
 
-Cubemap create_cubemap()
+Cubemap create_cubemap(Material material, GLuint texture)
 {
 	Cubemap cubemap;
 
@@ -68,6 +68,9 @@ Cubemap create_cubemap()
     glEnableVertexAttribArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, cubemap.vbo);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+
+    cubemap.material = material;
+    cubemap.texture = texture;
 
 	return cubemap;
 }
