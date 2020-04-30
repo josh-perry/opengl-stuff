@@ -1,3 +1,5 @@
+#include <imgui.h>
+
 #include <GL/glew.h>
 
 #include <glm/vec3.hpp>
@@ -20,6 +22,8 @@
 #include "mouse_state.h"
 #include "cubemap.h"
 #include "gameobject.h"
+#include "imgui_impl_opengl3.h"
+#include "imgui_impl_glfw.h"
 
 // I don't know why I need this; but I get linker errors otherwise.
 // https://community.khronos.org/t/unresolved-external-symbol/19795/2
@@ -34,8 +38,41 @@ void framebuffer_resize_callback(GLFWwindow* window, int width, int height);
 float window_width = 800;
 float window_height = 600;
 
+void imgui_debugger(std::vector<GameObject> gameobjects)
+{
+	if (ImGui::Begin("Inspector"))
+	{
+		for(unsigned int i = 0; i < gameobjects.size(); i++)
+		{
+			ImGui::PushID(gameobjects[i].id);
+			ImGui::Text(gameobjects[i].name.c_str());
+
+			float p[3] = {
+				gameobjects[i].world_position.x,
+				gameobjects[i].world_position.y,
+				gameobjects[i].world_position.z
+			};
+
+			if (ImGui::DragFloat3("Position", p))
+			{
+				gameobjects[i].world_position = glm::vec3(p[0], p[1], p[2]);
+			}
+
+			ImGui::PopID();
+		}
+	}
+
+	ImGui::End();
+
+	ImGui::Render();
+	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+}
+
 int main()
 {
+	time_t t;
+	srand((unsigned)time(&t));
+
 	set_min_log_level(LogLevel::DEBUG);
 
 	if (!glfwInit())
@@ -103,7 +140,18 @@ int main()
 	for (unsigned int i = 0; i <= 5; i++)
 	{
 		GameObject gameobject = create_gameobject();
-		gameobject.model = create_model("Resources/monkey.obj");
+
+		if (i % 2 == 0)
+		{
+			gameobject.model = create_model("Resources/monkey.obj");
+			gameobject.name = "Monkey";
+		}
+		else
+		{
+			gameobject.model = create_model("Resources/dice.obj");
+			gameobject.name = "Dice";
+		}
+
 		gameobject.world_position = glm::vec3(i * 5.0f, 0.0f, 0.0f);
 		gameobjects.push_back(gameobject);
 	}
@@ -121,36 +169,64 @@ int main()
 	float dt = 0.0f;
 	float last_frametime = 0.0f;
 
+	// Setup Dear ImGui context
+	IMGUI_CHECKVERSION();
+	ImGui::CreateContext();
+	ImGuiIO& io = ImGui::GetIO();
+	// Setup Platform/Renderer bindings
+	ImGui_ImplGlfw_InitForOpenGL(window, true);
+	ImGui_ImplOpenGL3_Init();
+	// Setup Dear ImGui style
+	ImGui::StyleColorsDark();
+
+	bool imgui_showing = false;
+
 	while (!glfwWindowShouldClose(window))
 	{
+		// Frametimes
 		float frametime = glfwGetTime();
 		dt = frametime - last_frametime;
 		last_frametime = frametime;
 
-		double xpos, ypos;
-		glfwGetCursorPos(window, &xpos, &ypos);
-		update_mouse_deltas(&mouse_state, xpos, ypos);
-
+		// Input
 		glfwPollEvents();
 
-		camera_movement(dt, window, &camera);
-		camera_rotation(dt, window, &camera, mouse_state);
+		double x, y;
+		glfwGetCursorPos(window, &x, &y);
+		update_mouse_deltas(&mouse_state, x, y);
+
+		if (glfwGetKey(window, GLFW_KEY_P))
+		{
+			imgui_showing = !imgui_showing;
+
+			if (imgui_showing)
+			{
+				glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+			}
+			else
+			{
+				glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+			}
+		}
 
 		if (glfwGetKey(window, GLFW_KEY_ESCAPE))
 		{
 			glfwSetWindowShouldClose(window, 1);
 		}
 
-		if (glfwGetKey(window, GLFW_KEY_F1) == GLFW_PRESS)
+		if (imgui_showing)
 		{
-			auto current_mode = glfwGetInputMode(window, GLFW_CURSOR);
-
-			if (current_mode == GLFW_CURSOR_DISABLED)
-				glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-			else
-				glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+			ImGui_ImplOpenGL3_NewFrame();
+			ImGui_ImplGlfw_NewFrame();
+			ImGui::NewFrame();
+		}
+		else
+		{
+			camera_movement(dt, window, &camera);
+			camera_rotation(dt, window, &camera, mouse_state);
 		}
 
+		// Draw
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		glm::mat4 view = glm::lookAt(
@@ -166,10 +242,15 @@ int main()
 
 		for (GameObject gameobject : gameobjects)
 		{
-			draw_model(gameobject.model, identity, view, projection, gameobject.world_position);
+			draw_gameobject(gameobject, identity, view, projection);
 		}
 		
 		reset_mouse_deltas(&mouse_state);
+
+		if (imgui_showing)
+		{
+			imgui_debugger(gameobjects);
+		}
 
 		glfwSwapBuffers(window);
 	}
