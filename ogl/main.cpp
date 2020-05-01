@@ -24,8 +24,12 @@
 #include "mouse_state.h"
 #include "cubemap.h"
 #include "gameobject.h"
-#include "imgui_impl_opengl3.h"
-#include "imgui_impl_glfw.h"
+
+// Components
+#include "position.h"
+#include "velocity.h"
+#include "renderable.h"
+#include "collider.h"
 
 // I don't know why I need this; but I get linker errors otherwise.
 // https://community.khronos.org/t/unresolved-external-symbol/19795/2
@@ -41,45 +45,11 @@ void create_monkey(entt::registry& registry);
 float window_width = 800;
 float window_height = 600;
 
-void imgui_debugger(std::vector<GameObject> gameobjects)
-{
-	if (ImGui::Begin("Inspector"))
-	{
-		for (unsigned int i = 0; i < gameobjects.size(); i++)
-		{
-			ImGui::PushID(gameobjects[i].id);
-			ImGui::Text(gameobjects[i].name.c_str());
-
-			float p[3] = {
-				gameobjects[i].world_position.x,
-				gameobjects[i].world_position.y,
-				gameobjects[i].world_position.z
-			};
-
-			if (ImGui::DragFloat3("Position", p))
-			{
-				gameobjects[i].world_position = glm::vec3(p[0], p[1], p[2]);
-			}
-
-			ImGui::PopID();
-		}
-	}
-
-	ImGui::End();
-
-	ImGui::Render();
-	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-}
-
-#include "position.h"
-#include "velocity.h"
-#include "renderable.h"
-
 void update(float dt, entt::registry& registry)
 {
 	registry.view<Position, Velocity>().each([dt](auto& pos, auto& vel) {
 		pos.position += vel.velocity * dt;
-		});
+	});
 }
 
 void draw(entt::registry& registry, Camera camera)
@@ -94,15 +64,24 @@ void draw(entt::registry& registry, Camera camera)
 	);
 	glm::mat4 projection = glm::perspective(glm::radians(45.0f), window_width / window_height, 0.1f, 100.0f);
 
-	registry.view<Position, Renderable, Model>().each([camera, identity, view, projection](auto& pos, auto& renderable, auto& model)
-		{
-			draw_model(model, identity, view, projection, pos.position);
-		});
 
 	registry.view<Cubemap, Renderable>().each([camera, view, projection](auto& cubemap, auto& renderable)
-		{
-			draw_cubemap(cubemap, view, projection);
-		});
+	{
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		draw_cubemap(cubemap, view, projection);
+	});
+
+	registry.view<Position, Renderable, Model>().each([camera, identity, view, projection](auto& pos, auto& renderable, auto& model)
+	{
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		draw_model(model, identity, view, projection, pos.position);
+	});
+
+	registry.view<BoxCollider, Position>().each([camera, identity, view, projection](auto& box, auto& pos)
+	{
+		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+		draw_mesh(box.mesh, identity, view, projection, pos.position);
+	});
 }
 
 int main()
@@ -270,4 +249,5 @@ void create_monkey(entt::registry& registry)
 	registry.assign<Renderable>(monkey, Renderable{});
 	registry.assign<Velocity>(monkey, Velocity{ 1.0f, 0.0f, 0.0f });
 	registry.assign<Model>(monkey, create_model("Resources/monkey.obj"));
+	registry.assign<BoxCollider>(monkey, create_boxcollider(glm::vec3(1.0f, 1.0f, 1.0f)));
 }

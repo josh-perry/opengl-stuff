@@ -151,22 +151,19 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="imgui_impl_glfw.cpp" />
-    <ClCompile Include="imgui_impl_opengl3.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="camera.h" />
+    <ClInclude Include="collider.h" />
     <ClInclude Include="cubemap.h" />
-    <ClInclude Include="imgui_impl_glfw.h" />
-    <ClInclude Include="imgui_impl_opengl3.h" />
     <ClInclude Include="log.h" />
     <ClInclude Include="material.h" />
     <ClInclude Include="mesh.h" />
+    <ClInclude Include="mesh_generators.h" />
     <ClInclude Include="model.h" />
     <ClInclude Include="mouse_state.h" />
     <ClInclude Include="position.h" />
-    <ClInclude Include="render.h" />
     <ClInclude Include="renderable.h" />
     <ClInclude Include="stb_image.h" />
     <ClInclude Include="texture.h" />

@@ -70,6 +70,9 @@ Material create_material(const char* vertex_src, const char* frag_src)
 bool default_mat_initialized = false;
 Material default_mat;
 
+bool debug_mat_initialized = false;
+Material debug_mat;
+
 Material get_default_material()
 {
 	if (default_mat_initialized)
@@ -81,4 +84,17 @@ Material get_default_material()
 
 	default_mat_initialized = true;
 	return default_mat;
+}
+
+Material get_debug_material()
+{
+	if (debug_mat_initialized)
+		return debug_mat;
+
+	auto vertex_shader_src = load_string_from_file("Resources/shaders/debug.vert");
+	auto frag_shader_src = load_string_from_file("Resources/shaders/debug.frag");
+	debug_mat = create_material(vertex_shader_src.c_str(), frag_shader_src.c_str());
+
+	debug_mat_initialized = true;
+	return debug_mat;
 }

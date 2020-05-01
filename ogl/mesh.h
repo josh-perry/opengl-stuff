@@ -42,9 +42,12 @@ Mesh create_mesh(std::vector<Vertex> v, std::vector<GLuint> i, std::vector<Textu
 	glBufferData(GL_ARRAY_BUFFER, m.vertices.size() * sizeof(Vertex), &m.vertices[0], GL_STATIC_DRAW);
 
 	// EBO
-	glGenBuffers(1, &m.ebo);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m.ebo);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, m.indices.size() * sizeof(GLuint), &m.indices[0], GL_STATIC_DRAW);
+	if (m.indices.size() > 0)
+	{
+		glGenBuffers(1, &m.ebo);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m.ebo);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, m.indices.size() * sizeof(GLuint), &m.indices[0], GL_STATIC_DRAW);
+	}
 
 	// Setup vertex attrib
 	glEnableVertexAttribArray(vertex_attrib);
@@ -96,13 +99,18 @@ void draw_mesh(Mesh mesh, glm::mat4 identity, glm::mat4 view, glm::mat4 projecti
 	{
 		glBindTexture(GL_TEXTURE_2D, mesh.textures[0].id);
 	}
-	else
-	{
-		log_line("No textures found for mesh; unbinding", LogLevel::TRACE);
-		glBindTexture(GL_TEXTURE_2D, 0);
-	}
 
 	glBindVertexArray(mesh.vao);
-	glDrawElements(GL_TRIANGLES, mesh.indices.size(), GL_UNSIGNED_INT, 0);
-	glBindVertexArray(0);
+
+	if (mesh.indices.size() == 0)
+	{
+		glDrawArrays(GL_TRIANGLES, 0, mesh.vertices.size());
+	}
+	else
+	{
+		glDrawElements(GL_TRIANGLES, mesh.indices.size(), GL_UNSIGNED_INT, 0);
+	}
+
+    glBindVertexArray(0);
+	glBindTexture(GL_TEXTURE_2D, 0);
 }

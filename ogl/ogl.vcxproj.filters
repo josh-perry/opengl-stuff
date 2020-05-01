@@ -16,21 +16,9 @@
     <Filter Include="Header Files\components">
       <UniqueIdentifier>{5e15c6ba-84ca-4056-b0ec-86663fe7a063}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\systems">
-      <UniqueIdentifier>{42e45e1d-e1b8-4856-a6b5-e8dbf7bfc4a8}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="imgui_impl_glfw.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="imgui_impl_opengl3.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="velocity.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -68,22 +56,19 @@
     <ClInclude Include="cubemap.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="imgui_impl_glfw.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="imgui_impl_opengl3.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="position.h">
       <Filter>Header Files\components</Filter>
     </ClInclude>
     <ClInclude Include="velocity.h">
       <Filter>Header Files\components</Filter>
     </ClInclude>
-    <ClInclude Include="render.h">
-      <Filter>Header Files\systems</Filter>
-    </ClInclude>
     <ClInclude Include="renderable.h">
+      <Filter>Header Files\components</Filter>
+    </ClInclude>
+    <ClInclude Include="mesh_generators.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="collider.h">
       <Filter>Header Files\components</Filter>
     </ClInclude>
   </ItemGroup>

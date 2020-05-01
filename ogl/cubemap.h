@@ -1,6 +1,8 @@
 #pragma once
 #include <GL\glew.h>
 #include "material.h"
+#include "mesh_generators.h"
+
 struct Cubemap
 {
     GLuint vao;
@@ -14,53 +16,11 @@ Cubemap create_cubemap(Material material, GLuint texture)
 {
 	Cubemap cubemap;
 
-    float points[] = {
-      -10.0f,  10.0f, -10.0f,
-      -10.0f, -10.0f, -10.0f,
-       10.0f, -10.0f, -10.0f,
-       10.0f, -10.0f, -10.0f,
-       10.0f,  10.0f, -10.0f,
-      -10.0f,  10.0f, -10.0f,
-
-      -10.0f, -10.0f,  10.0f,
-      -10.0f, -10.0f, -10.0f,
-      -10.0f,  10.0f, -10.0f,
-      -10.0f,  10.0f, -10.0f,
-      -10.0f,  10.0f,  10.0f,
-      -10.0f, -10.0f,  10.0f,
-
-       10.0f, -10.0f, -10.0f,
-       10.0f, -10.0f,  10.0f,
-       10.0f,  10.0f,  10.0f,
-       10.0f,  10.0f,  10.0f,
-       10.0f,  10.0f, -10.0f,
-       10.0f, -10.0f, -10.0f,
-
-      -10.0f, -10.0f,  10.0f,
-      -10.0f,  10.0f,  10.0f,
-       10.0f,  10.0f,  10.0f,
-       10.0f,  10.0f,  10.0f,
-       10.0f, -10.0f,  10.0f,
-      -10.0f, -10.0f,  10.0f,
-
-      -10.0f,  10.0f, -10.0f,
-       10.0f,  10.0f, -10.0f,
-       10.0f,  10.0f,  10.0f,
-       10.0f,  10.0f,  10.0f,
-      -10.0f,  10.0f,  10.0f,
-      -10.0f,  10.0f, -10.0f,
-
-      -10.0f, -10.0f, -10.0f,
-      -10.0f, -10.0f,  10.0f,
-       10.0f, -10.0f, -10.0f,
-       10.0f, -10.0f, -10.0f,
-      -10.0f, -10.0f,  10.0f,
-       10.0f, -10.0f,  10.0f
-    };
+    std::vector<float> points = generate_cube_ccw(10.0f, 10.0f, 10.0f);
     
     glGenBuffers(1, &cubemap.vbo);
     glBindBuffer(GL_ARRAY_BUFFER, cubemap.vbo);
-    glBufferData(GL_ARRAY_BUFFER, 3 * 36 * sizeof(float), &points, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, 3 * 36 * sizeof(float), &points.front(), GL_STATIC_DRAW);
 
     glGenVertexArrays(1, &cubemap.vao);
     glBindVertexArray(cubemap.vao);
@@ -95,4 +55,6 @@ void draw_cubemap(Cubemap cubemap, glm::mat4 view, glm::mat4 projection)
     glDrawArrays(GL_TRIANGLES, 0, 36);
 
     glDepthMask(GL_TRUE);
+
+    glBindVertexArray(0);
 }
